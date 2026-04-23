@@ -1,70 +1,58 @@
-# n = int(input())
-
-# if n == 0:
-#     print("Student:")
-# else:
-#     scores = list(map(int, input().split()))
-
-#     high_score = max(scores)
-#     low_score = min(scores)
-#     avg_score = ( sum(scores) / n ) + 1e-9
-
-#     members = [f"Student{i}" for i in range(1, n + 1)]
-    
-#     print("Student: " + " ".join(members))
-    
-#     print(f"Highest score: {high_score}")
-#     print(f"Lowest score: {low_score}")
-#     print(f"Average score: {avg_score:.1f}")
-#     print("Students who scored above average:")
-
-#     for j in range(n):
-#         if scores[j] > avg_score:
-#             print(members[j])
-
-import sys
-
 def solve():
-    # ดูดข้อมูลทั้งหมดทีเดียว หั่นด้วยช่องว่าง (ไม่แคร์ว่าจะขึ้นบรรทัดใหม่หรือไม่)
-    data = sys.stdin.read().split()
-    
-    # ดักกรณีไม่มีข้อมูลเข้ามาเลย ป้องกันโปรแกรมพัง
-    if not data:
+    # 1. รับค่า n แบบป้องกันกรณีบรรทัดว่าง
+    try:
+        n = int(input().strip())
+    except EOFError:
         return
         
-    n = int(data[0])
-    
-    # กฎข้อที่ 1: ถ้า n = 0 ให้พิมพ์แค่ Student: แล้วจบโปรแกรมทันที
+    # กฎข้อที่ 1: ถ้า n = 0 ให้พิมพ์ Student: แล้วจบโปรแกรมทันที
     if n == 0:
         print("Student:")
         return
         
-    # ดึงคะแนนจำนวน n ตัวถัดมา
-    scores = [int(x) for x in data[1:n+1]]
+    # 2. รับคะแนนให้ครบ n ค่า (ใช้ while loop ป้องกันกรณี Grader เคาะบรรทัดแปลกๆ)
+    scores = []
+    while len(scores) < n:
+        try:
+            line = input().split()
+            scores.extend([int(x) for x in line])
+        except EOFError:
+            break
+            
+    # ตัดให้เหลือแค่ n ตัวเป๊ะๆ (เผื่อ Grader ส่งขยะแถมมาด้านหลัง)
+    scores = scores[:n]
     
     high_score = max(scores)
     low_score = min(scores)
+    sum_scores = sum(scores)
     
-    # คำนวณค่าเฉลี่ยแบบเป๊ะๆ เพื่อเอาไว้เทียบว่าใครมากกว่า
-    exact_avg = sum(scores) / n
+    # 3. คำนวณค่าเฉลี่ยด้วย "คณิตศาสตร์จำนวนเต็ม (Integer Math)"
+    # เอาผลรวมคูณ 100 แล้วหาร n จะได้ค่าแบบไม่เอาทศนิยม (เช่น 2.25 -> 225)
+    val = (sum_scores * 100) // n 
     
-    # กฎข้อที่ 2: แก้ปัญหาปัดเศษของ Python โดยบวก 1e-9 (0.000000001) เข้าไป
-    # ถ้าค่าเป็น 2.25 จะกลายเป็น 2.250000001 พอสั่ง :.1f มันจะปัดเป็น 2.3 ให้เป๊ะๆ!
-    print_avg = exact_avg + 1e-9
+    # เช็คเศษหลักสุดท้าย (เช่น 5) ถ้า >= 5 ให้ปัดขึ้น 
+    if val % 10 >= 5:
+        avg_10 = (val // 10) + 1
+    else:
+        avg_10 = val // 10
+        
+    # จับแยกประกอบร่างกลับเป็น String แบบ 1 ตำแหน่ง
+    avg_str = f"{avg_10 // 10}.{avg_10 % 10}"
     
-    # สร้างรายชื่อนักเรียน
+    # 4. สร้าง List รายชื่อ
     members = [f"Student{i}" for i in range(1, n + 1)]
     
-    # พิมพ์ผลลัพธ์
+    # 5. พิมพ์ผลลัพธ์
     print("Student: " + " ".join(members))
     print(f"Highest score: {high_score}")
     print(f"Lowest score: {low_score}")
-    print(f"Average score: {print_avg:.1f}")
+    print(f"Average score: {avg_str}")
     print("Students who scored above average:")
     
-    # วนลูปหาคนที่คะแนน "มากกว่า" ค่าเฉลี่ย (strictly greater)
+    # 6. หาคนที่คะแนนสูงกว่าเฉลี่ย (ใช้ Integer Math ย้ายข้างสมการ ป้องกันบั๊ก)
+    # scores[i] > (sum / n)  -->  ย้าย n ไปคูณ จะได้ scores[i] * n > sum
     for i in range(n):
-        if scores[i] > exact_avg:
+        if scores[i] * n > sum_scores:
             print(members[i])
 
 if __name__ == '__main__':
